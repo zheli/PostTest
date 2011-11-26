@@ -7,6 +7,7 @@
 //
 
 #import "ViewController.h"
+#import "ASIFormDataRequest.h"
 
 @implementation ViewController
 @synthesize userName=_userName;
@@ -63,15 +64,45 @@
 }
 
 - (IBAction)changeGreeting:(id)sender {
+    self.label.text = @"Loging...";
     self.userName = self.textField.text;
+    
+    self.label.text = @"Posting...@";
+    
+    NSURL *loginUrl = [NSURL URLWithString:@"http://api.mart.fm/account/login.json?email=mm@mart.fm&password=martmart"];
+    ASIHTTPRequest *loginRequest = [ASIHTTPRequest requestWithURL:loginUrl];
+    [loginRequest startSynchronous];
+    int statusCode = [loginRequest responseStatusCode];
+    NSString *loginResult = [loginRequest responseString];
+    NSLog(@"Status: [%d], Result: %@", statusCode, loginResult);
     
     NSString *nameString = self.userName;
     if ([nameString length] == 0) {
         nameString = @"World";
     }
     
-    NSString *greeting = [[NSString alloc] initWithFormat:@"Hello, %@!", nameString];
-    self.label.text = greeting;
+    NSURL *url = [NSURL URLWithString: @"http://api.mart.fm/item/create.json"];
+    ASIFormDataRequest *request = [ASIFormDataRequest requestWithURL:url];
+    [request setPostValue: @"Test"      forKey: @"title"];
+    [request setPostValue: @"12"        forKey: @"price"];
+    [request setPostValue: @"51.2735"   forKey: @"lat"];
+    [request setPostValue: @"103.1645"  forKey: @"lon"];
+    [request setPostValue: @"1"         forKey: @"currency"];
+    [request setPostValue: @"http://i.mart.fm/l/1306731337.jpg,http://i.mart.fm/l/1306731339.jpg"
+                                        forKey: @"currency"];
+    [request setPostValue: @"http://i.mart.fm/s/1306731337.jpg,http://i.mart.fm/s/1306731339.jpg"
+                                        forKey: @"minurl"];
+    NSLog(@"POST data to API...");
+    [request startSynchronous];
+    NSError *error = [request error];
+    NSString *result = @"Post failed!";
+    NSLog(@"%@", error);
+    if (!error) {
+        NSString *response = [request responseString];
+        NSLog(@"%@", response);
+        result = @"Post succeed!";
+    }
+    self.label.text = result;
 }
 
 - (BOOL)textFieldShouldReturn:(UITextField *)theTextField {

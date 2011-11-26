@@ -17,4 +17,5 @@
 @property (nonatomic, copy) NSString *userName;
 
 - (IBAction)changeGreeting:(id)sender;
+
 @end
